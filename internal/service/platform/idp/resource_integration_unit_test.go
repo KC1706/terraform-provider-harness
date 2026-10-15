@@ -164,6 +164,16 @@ func applyDefaults(in map[string]any) {
 			}
 		}
 	}
+	if in["type"] == "Jira" {
+		jira, _ := spec["jira"].(map[string]any)
+		if jira == nil {
+			jira = map[string]any{}
+			spec["jira"] = jira
+		}
+		if start, _ := jira["start_date"].(string); start == "" {
+			jira["start_date"] = "2025-10-15T00:00:00Z"
+		}
+	}
 	if gh, ok := spec["github"].(map[string]any); ok {
 		if _, ok := gh["agent_file_name"]; !ok {
 			gh["agent_file_name"] = "AGENTS.md"
@@ -504,6 +514,71 @@ resource "harness_platform_idp_integration" "gh" {
     mode = "api"
   }`),
 				ExpectError: regexpMust("custom is only allowed when type is Custom"),
+			},
+		},
+	})
+}
+
+func TestUnitIntegrationJiraSettings(t *testing.T) {
+	newFakeIntegrationsAPI(t)
+	const res = "harness_platform_idp_integration.jira"
+	config := `
+resource "harness_platform_idp_integration" "jira" {
+  identifier = "jira"
+  name       = "Jira"
+  type       = "Jira"
+  connector {
+    inline { credentials_ref = "account.jira" }
+  }
+  kind { kind = "projects" }
+  %s
+}
+`
+	resource.UnitTest(t, resource.TestCase{
+		ProviderFactories: unitProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				// The server's default start date is read back without a diff.
+				Config: fmt.Sprintf(config, ""),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(res, "jira.0.start_date", "2025-10-15T00:00:00Z"),
+					resource.TestCheckResourceAttr(res, "jira.0.custom_fields.#", "0"),
+				),
+			},
+			{
+				// So is a block that sets only custom_fields.
+				Config: fmt.Sprintf(config, `jira {
+    custom_fields = ["customfield_10456"]
+  }`),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(res, "jira.0.start_date", "2025-10-15T00:00:00Z"),
+					resource.TestCheckResourceAttr(res, "jira.0.custom_fields.#", "1"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(config, `jira {
+    start_date    = "2024-01-01T00:00:00Z"
+    custom_fields = ["customfield_10456", "customfield_10001"]
+  }`),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(res, "jira.0.start_date", "2024-01-01T00:00:00Z"),
+					resource.TestCheckTypeSetElemAttr(res, "jira.0.custom_fields.*", "customfield_10456"),
+					resource.TestCheckResourceAttr(res, "jira.0.custom_fields.#", "2"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(config, `jira {
+    custom_fields = ["customfield_1"]
+  }`) + "\n" + `resource "harness_platform_idp_integration" "gh" {
+  identifier = "gh2"
+  name       = "GitHub"
+  type       = "GitHub"
+  github { orgs = ["acme"] }
+  jira { custom_fields = ["customfield_1"] }
+  kind { kind = "repository" }
+}
+`,
+				ExpectError: regexpMust("jira is only allowed when type is Jira"),
 			},
 		},
 	})

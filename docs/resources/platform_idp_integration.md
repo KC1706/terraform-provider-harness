@@ -184,6 +184,7 @@ resource "harness_platform_idp_integration" "github" {
 - `harness_cd` (Block List, Max: 1) Settings for HarnessCD integrations. (see [below for nested schema](#nestedblock--harness_cd))
 - `harness_code` (Block List, Max: 1) Settings for HarnessCode integrations. (see [below for nested schema](#nestedblock--harness_code))
 - `harness_k8s` (Block List, Max: 1) Settings for HarnessK8s integrations. (see [below for nested schema](#nestedblock--harness_k8s))
+- `jira` (Block List, Max: 1) Settings for Jira integrations. (see [below for nested schema](#nestedblock--jira))
 - `org_id` (String) Unique identifier of the organization.
 - `pagerduty` (Block List, Max: 1) Settings for PagerDuty integrations. (see [below for nested schema](#nestedblock--pagerduty))
 - `project_id` (String) Unique identifier of the project.
@@ -470,6 +471,15 @@ Required:
 
 - `environment_identifier` (String) Environment.
 - `service_discovery_agent_identifier` (String) Service discovery agent.
+
+
+<a id="nestedblock--jira"></a>
+### Nested Schema for `jira`
+
+Optional:
+
+- `custom_fields` (Set of String) Custom field IDs to sync, like customfield_10456.
+- `start_date` (String) Lower bound for the first sync, RFC3339; 365 days back when omitted.
 
 
 <a id="nestedblock--pagerduty"></a>

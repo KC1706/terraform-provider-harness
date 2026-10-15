@@ -18,6 +18,7 @@ import (
 var integrationTypeBlocks = map[string]string{
 	"github":          "GitHub",
 	"bitbucket_cloud": "BitbucketCloud",
+	"jira":            "Jira",
 	"pagerduty":       "PagerDuty",
 	"datadog":         "DataDog",
 	"dynatrace":       "DynaTrace",
@@ -222,6 +223,10 @@ func integrationSpecSchema() map[string]*schema.Schema {
 			"agent_file_name": defaultedString("Agents file to detect in repositories."),
 		}),
 		"bitbucket_cloud": typeBlock("BitbucketCloud", map[string]*schema.Schema{"start_date": startDate()}),
+		"jira": typeBlock("Jira", map[string]*schema.Schema{
+			"start_date":    defaultedString("Lower bound for the first sync, RFC3339; 365 days back when omitted."),
+			"custom_fields": stringSet("Custom field IDs to sync, like customfield_10456."),
+		}),
 		"pagerduty": typeBlock("PagerDuty", map[string]*schema.Schema{
 			"start_date": startDate(),
 			"analytics_duration_months": {

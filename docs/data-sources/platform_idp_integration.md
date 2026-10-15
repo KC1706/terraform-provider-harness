@@ -57,6 +57,7 @@ output "webhook_urls" {
 - `harness_k8s` (List of Object) Settings for HarnessK8s integrations. (see [below for nested schema](#nestedatt--harness_k8s))
 - `health` (String) Health of the integration.
 - `id` (String) The ID of this resource.
+- `jira` (List of Object) Settings for Jira integrations. (see [below for nested schema](#nestedatt--jira))
 - `kind` (List of Object) A kind to sync. Import reads kinds sorted by name, so list them that way to import without a diff. (see [below for nested schema](#nestedatt--kind))
 - `mode_effective` (String) How the integration gets data: airbyte, platform, webhook or api.
 - `pagerduty` (List of Object) Settings for PagerDuty integrations. (see [below for nested schema](#nestedatt--pagerduty))
@@ -261,6 +262,15 @@ Read-Only:
 
 - `environment_identifier` (String)
 - `service_discovery_agent_identifier` (String)
+
+
+<a id="nestedatt--jira"></a>
+### Nested Schema for `jira`
+
+Read-Only:
+
+- `custom_fields` (Set of String)
+- `start_date` (String)
 
 
 <a id="nestedatt--kind"></a>
